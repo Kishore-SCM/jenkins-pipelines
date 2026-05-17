@@ -26,7 +26,7 @@ pipeline {
     stage("Checkout") {
       steps {
          git branch: 'master',
-         credentialsId: 'git_credentials',
+         credentialsId: 'github',
           url: 'https://github.com/Kishore-SCM/spring3-mvc-maven-xml-hello-world.git'
         checkout scm
         echo "Building ${IMAGE_TAG} from commit ${GIT_COMMIT.take(7)}"
