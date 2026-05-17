@@ -13,7 +13,7 @@ pipeline {
     ECR_REGISTRY = credentials("ecr-registry-url")
     ECR_REPO     = "jmstechops/backend"
     IMAGE_TAG    = "${params.DEPLOY_ENV}-${params.VERSION_TAG}"
-    SONAR_HOST   = "http://localhost:9000"
+    SONAR_HOST   = "http://13.126.234.166:9000"
   }
 
   options {
@@ -25,6 +25,9 @@ pipeline {
   stages {
     stage("Checkout") {
       steps {
+         git branch: 'master',
+         credentialsId: 'git_credentials',
+          url: 'https://github.com/Kishore-SCM/spring3-mvc-maven-xml-hello-world.git'
         checkout scm
         echo "Building ${IMAGE_TAG} from commit ${GIT_COMMIT.take(7)}"
       }
