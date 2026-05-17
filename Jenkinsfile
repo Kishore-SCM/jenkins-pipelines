@@ -10,11 +10,11 @@ pipeline {
 
   environment {
     AWS_REGION   = "ap-south-1"
-    ECR_REGISTRY = credentials("ecr-registry-url")
+    ECR_REGISTRY = "453764757326.dkr.ecr.ap-south-1.amazonaws.com" 
     ECR_REPO     = "jmstechops/backend"
     IMAGE_TAG    = "${params.DEPLOY_ENV}-${params.VERSION_TAG}"
     SONAR_HOST   = "http://13.126.234.166:9000"
-  }
+}
 
   options {
     timeout(time: 30, unit: "MINUTES")
