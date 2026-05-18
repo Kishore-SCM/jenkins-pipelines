@@ -13,7 +13,7 @@ pipeline {
     ECR_REGISTRY = "453764757326.dkr.ecr.ap-south-1.amazonaws.com" 
     ECR_REPO     = "jmstechops/backend"
     IMAGE_TAG    = "${params.DEPLOY_ENV}-${params.VERSION_TAG}"
-    SONAR_HOST   = "http://13.126.234.166:9000"
+    SONAR_HOST   = "http://43.205.203.172:9000"
 }
 tools {
     maven "maven3"  
@@ -89,17 +89,3 @@ tools {
       }
     }
   }
-
-  post {
-    success { notifySlack("SUCCESS", "#00AA00") }
-    failure  { notifySlack("FAILURE", "#AA0000") }
-    always   { sh "docker rmi ${ECR_REGISTRY}/${ECR_REPO}:${IMAGE_TAG} || true" }
-  }
-}
-
-def notifySlack(status, color) {
-  slackSend(channel: "#devops-alerts",
-    color: color,
-    message: "${status}: ${JOB_NAME} #${BUILD_NUMBER} | ${IMAGE_TAG} | ${BUILD_URL}")
-}
-
