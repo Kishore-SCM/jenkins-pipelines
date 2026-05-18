@@ -15,7 +15,9 @@ pipeline {
     IMAGE_TAG    = "${params.DEPLOY_ENV}-${params.VERSION_TAG}"
     SONAR_HOST   = "http://13.126.234.166:9000"
 }
-
+tools {
+    maven3  
+  }
   options {
     timeout(time: 30, unit: "MINUTES")
     buildDiscarder(logRotator(numToKeepStr: "10"))
