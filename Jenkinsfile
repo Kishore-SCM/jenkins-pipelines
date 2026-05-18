@@ -16,7 +16,7 @@ pipeline {
     SONAR_HOST   = "http://13.126.234.166:9000"
 }
 tools {
-    maven3  
+    maven "maven3"  
   }
   options {
     timeout(time: 30, unit: "MINUTES")
