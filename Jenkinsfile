@@ -1,6 +1,10 @@
 pipeline {
   agent any
 
+  tools {
+    maven "maven3"  // ✅ must match Jenkins Tools name exactly
+  }
+
   parameters {
     choice(name: "DEPLOY_ENV", choices: ["dev", "uat", "prod"], description: "Target environment")
     string(name: "VERSION_TAG", defaultValue: "${BUILD_NUMBER}", description: "Docker image version")
@@ -10,27 +14,25 @@ pipeline {
 
   environment {
     AWS_REGION   = "ap-south-1"
-    ECR_REGISTRY = "453764757326.dkr.ecr.ap-south-1.amazonaws.com" 
+    ECR_REGISTRY = "453764757326.dkr.ecr.ap-south-1.amazonaws.com"
     ECR_REPO     = "jmstechops/backend"
     IMAGE_TAG    = "${params.DEPLOY_ENV}-${params.VERSION_TAG}"
     SONAR_HOST   = "http://43.205.203.172:9000"
-}
-tools {
-    maven "maven3"  
   }
+
   options {
     timeout(time: 30, unit: "MINUTES")
     buildDiscarder(logRotator(numToKeepStr: "10"))
-    disableConcurrentBuilds()  // Prevent parallel builds causing conflicts
+    disableConcurrentBuilds()
   }
 
   stages {
     stage("Checkout") {
       steps {
-         git branch: 'master',
-         credentialsId: 'github',
-          url:'https://github.com/Kishore-SCM/spring3-mvc-maven-xml-hello-world.git'
-        checkout scm
+        // ✅ Only one checkout — source code repo
+        git branch: 'master',
+            credentialsId: 'github',
+            url: 'https://github.com/Kishore-SCM/spring3-mvc-maven-xml-hello-world.git'
         echo "Building ${IMAGE_TAG} from commit ${GIT_COMMIT.take(7)}"
       }
     }
@@ -49,7 +51,6 @@ tools {
       post {
         always {
           junit "target/surefire-reports/*.xml"
-          publishHTML(target: [reportName: "Test Report", reportDir: "target/site", reportFiles: "index.html"])
         }
       }
     }
@@ -68,8 +69,6 @@ tools {
       steps {
         timeout(time: 5, unit: "MINUTES") {
           waitForQualityGate abortPipeline: true
-          // This BLOCKS the pipeline until Sonar analysis is complete
-          // abortPipeline: true means FAIL the build if quality gate fails
         }
       }
     }
@@ -83,9 +82,25 @@ tools {
     stage("Push to ECR") {
       steps {
         withAWS(credentials: "aws-credentials", region: "${AWS_REGION}") {
-          sh "aws ecr get-login-password --region ${AWS_REGION} | docker login --username AWS --password-stdin ${ECR_REGISTRY}"
+          sh """
+            aws ecr get-login-password --region ${AWS_REGION} \
+            | docker login --username AWS --password-stdin ${ECR_REGISTRY}
+          """
           sh "docker push ${ECR_REGISTRY}/${ECR_REPO}:${IMAGE_TAG}"
         }
       }
     }
   }
+
+  post {
+    success {
+      echo "✅ SUCCESS: ${env.JOB_NAME} #${env.BUILD_NUMBER} | ${env.IMAGE_TAG}"
+    }
+    failure {
+      echo "❌ FAILURE: ${env.JOB_NAME} #${env.BUILD_NUMBER} | ${env.IMAGE_TAG}"
+    }
+    always {
+      sh "docker rmi ${ECR_REGISTRY}/${ECR_REPO}:${IMAGE_TAG} || true"
+    }
+  }
+}
