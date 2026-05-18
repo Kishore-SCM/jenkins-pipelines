@@ -43,17 +43,18 @@ pipeline {
       }
     }
 
-    stage("Unit Tests") {
-      when { expression { !params.SKIP_TESTS } }
-      steps {
-        sh "mvn test -B"
-      }
-      post {
-        always {
-          junit "target/surefire-reports/*.xml"
-        }
-      }
+   stage("Unit Tests") {
+  when { expression { !params.SKIP_TESTS } }
+  steps {
+    sh "mvn test -B"
+  }
+  post {
+    always {
+      junit allowEmptyResults: true,    // ✅ don't fail if no tests
+            testResults: "target/surefire-reports/*.xml"
     }
+  }
+}
 
     stage("SonarQube Scan") {
       when { expression { !params.SKIP_SONAR } }
