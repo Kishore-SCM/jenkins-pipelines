@@ -17,7 +17,7 @@ pipeline {
     ECR_REGISTRY = "453764757326.dkr.ecr.ap-south-1.amazonaws.com"
     ECR_REPO     = "jmstechops/backend"
     IMAGE_TAG    = "${params.DEPLOY_ENV}-${params.VERSION_TAG}"
-    SONAR_HOST   = "http://43.205.203.172:9000"
+    SONAR_HOST   = "http://15.206.93.39:9000"
   }
 
   options {
